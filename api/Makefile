@@ -17,7 +17,16 @@ clean:
 	- rm -f openapitools.json
 	- rm -rf .hypothesis
 
-test-api-spec:
+test-api-spec-v0:
+	$(call test_api_spec,openapi.yaml)
+
+test-api-spec-v1:
+	$(call test_api_spec,spec.yaml)
+
+serve:
+	cd doc && python -m http.server 8888
+
+define test_api_spec
 	- pkill aptos-node
 	cargo build -p aptos-node
 	./../target/debug/aptos-node --test --lazy &
@@ -32,10 +41,7 @@ test-api-spec:
 		--store-network-log=./../target/schemathesis-network-log.yaml \
 		--checks all \
 		--base-url http://localhost:8080 \
-		http://localhost:8080/openapi.yaml
+		http://localhost:8080/$(1)
+endef
 
-
-serve:
-	cd doc && python -m http.server 8888
-
-.PHONY: test lint test-code-gen test-api-spec clean serve
+.PHONY: test lint test-code-gen test-api-spec-v0 test-api-spec-v1 clean serve
